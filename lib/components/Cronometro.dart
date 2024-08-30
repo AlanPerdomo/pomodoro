@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:mobx/mobx.dart';
 import 'package:pomodoro/components/CronometroBotao.dart';
 import 'package:pomodoro/main.dart';
 import 'package:provider/provider.dart';
@@ -10,62 +12,65 @@ class Cronometro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = Provider.of<PomodoroStore>(context);
-    return Container(
-      alignment: Alignment.center,
-      color: Colors.red,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            "data",
-            style: TextStyle(
-              fontSize: 40,
-              color: Colors.white,
+    return Observer(builder: (_) {
+      return Container(
+        alignment: Alignment.center,
+        color: store.estaTrabalhando() ? Colors.red : Colors.green,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              store.estaTrabalhando() ? 'Trabalho' : 'Descanso',
+              style: const TextStyle(
+                fontSize: 40,
+                color: Colors.white,
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            '${store.minutos.toString().padLeft(
-                  2,
-                  '0',
-                )}:${store.segundos.toString().padLeft(
-                  2,
-                  '0',
-                )}',
-            style: const TextStyle(
-              fontSize: 120,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: CronometroBotao(
-                  icon: Icons.play_arrow,
-                  texto: 'Iniciar',
+            const SizedBox(height: 20),
+            Observer(
+              builder: (_) => Text(
+                '${store.minutos.toString().padLeft(2, '0')}:${store.segundos.toString().padLeft(2, '0')}',
+                style: const TextStyle(
+                  fontSize: 80,
+                  color: Colors.white,
                 ),
               ),
-              // Padding(
-              //   padding: EdgeInsets.only(right: 10),
-              //   child: CronometroBotao(
-              //     icon: Icons.stop,
-              //     texto: 'Parar',
-              //   ),
-              // ),
-              Padding(
-                padding: EdgeInsets.only(left: 10),
-                child: CronometroBotao(
-                  icon: Icons.refresh,
-                  texto: 'Reiniciar',
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!store.iniciado)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: CronometroBotao(
+                      icon: Icons.play_arrow,
+                      texto: 'Iniciar',
+                      click: store.iniciar,
+                    ),
+                  ),
+                if (store.iniciado)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: CronometroBotao(
+                      icon: Icons.stop,
+                      texto: 'Parar',
+                      click: store.parar,
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: CronometroBotao(
+                    icon: Icons.refresh,
+                    texto: 'Reiniciar',
+                    click: store.reiniciar,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+              ],
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
